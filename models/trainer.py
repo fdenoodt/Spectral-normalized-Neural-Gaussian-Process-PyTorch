@@ -1,4 +1,5 @@
 import copy
+from logging import getLogger
 
 import matplotlib.pyplot as plt
 import torch
@@ -6,6 +7,7 @@ from torch.utils.data import DataLoader
 
 from .gaussian_process_layer import RandomFeatureGaussianProcess
 
+logger = getLogger(__name__)
 
 class Trainer:
     def __init__(self,
@@ -15,7 +17,7 @@ class Trainer:
                  device=torch.device('cuda')):
         self.model = model(**model_config)
         self.model.to(device)
-        print(self.model)
+        logger.info(self.model)
         criterions = {
             'classification': torch.nn.CrossEntropyLoss(reduction='mean'),
             'regression': torch.nn.MSELoss(reduction='mean')
@@ -63,9 +65,9 @@ class Trainer:
             running_loss /= i
             self.epoch_losses.append(running_loss)
             if epoch % 10 == 0:
-                print(f'Avg Loss Epoch {epoch}/{epochs}: {running_loss}')
+                logger.info(f'Epoch {epoch}/{epochs} Avg Loss: {running_loss}')
             if epoch == next_checkpoint:
-                print(f'Producing checkpoint: {next_checkpoint} epochs')
+                logger.info(f'Producing checkpoint: {next_checkpoint} epochs')
                 yield self.generate_model(copy.deepcopy(self.model), data_loader_config, training_data)
                 next_checkpoint = next(checkpoint_iter)
 

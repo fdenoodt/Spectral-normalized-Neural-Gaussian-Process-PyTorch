@@ -1,0 +1,11 @@
+name: sngp
+channels:
+  - conda-forge
+dependencies:
+  - python
+  - pytorch
+  - matplotlib
+  - scikit-learn
+  - numpy
+  - jupytext
+  - nbconvert
