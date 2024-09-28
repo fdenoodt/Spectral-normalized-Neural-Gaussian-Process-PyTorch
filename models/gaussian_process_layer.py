@@ -1,11 +1,14 @@
 import math
+from logging import getLogger
 
 import torch
 import torch.nn as nn
 from torch.nn.parameter import Parameter
 
 from .resnet import ResNetBackbone
+from .netresult import NetResult
 
+logger = getLogger(__name__)
 
 class RandomFeatureGaussianProcess(nn.Module):
     def __init__(
@@ -99,8 +102,8 @@ class RandomFeatureGaussianProcess(nn.Module):
         with torch.no_grad():
             if self.momentum < 0:
                 # self.precision = identity => self.precision = identity + features.T @ features
-                print(f'features: {features.shape}')
-                print(f'precision: {self.precision.shape}')
+                logger.info(f'features: {features.shape}')
+                logger.info(f'precision: {self.precision.shape}')
                 self.precision = Parameter(self.precision + features.T @ features)
             else:
                 self.precision = Parameter(self.momentum * self.precision +
@@ -119,13 +122,13 @@ class RandomFeatureGaussianProcess(nn.Module):
                 L = torch.linalg.cholesky(self.precision)
                 self.covariance = Parameter(self.ridge_penalty * L.cholesky_inverse(), requires_grad=False)
                 self.is_fit = torch.tensor(True)
-                print('cholesky')
+                logger.info('cholesky')
             except:
                 self.covariance = Parameter(self.ridge_penalty * self.precision.cholesky_inverse(), requires_grad=False)
                 self.is_fit = torch.tensor(True)
-                print('standard inversion')
+                logger.info('standard inversion')
         else:
-            print(f'no inversion, already fit')
+            logger.info(f'no inversion, already fit')
 
     def reset_covariance(self):
         self.is_fit = torch.tensor(False)

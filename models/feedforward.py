@@ -6,7 +6,9 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 from models.sngp.models.resnet import ResNetBackbone
+from logging import getLogger
 
+logger = getLogger(__name__)
 
 class FeedForwardResNet(torch.nn.Module):
     def __init__(self, input_features, num_hidden_layers, num_hidden, dropout_rate, output_features):
@@ -88,9 +90,9 @@ class FeedForwardTrainer:
             running_loss /= i
             self.epoch_losses.append(running_loss)
             if epoch % 10 == 0:
-                print(f'Avg Loss Epoch {epoch}/{epochs}: {running_loss}')
+                logger.info(f'Avg Loss Epoch {epoch}/{epochs}: {running_loss}')
             if epoch == next_checkpoint:
-                print(f'Producing checkpoint: {next_checkpoint} epochs')
+                logger.info(f'Producing checkpoint: {next_checkpoint} epochs')
                 yield self.generate_model(copy.deepcopy(self.model))
                 next_checkpoint = next(checkpoint_iter)
         self.model = self.generate_model(copy.deepcopy(self.model))
