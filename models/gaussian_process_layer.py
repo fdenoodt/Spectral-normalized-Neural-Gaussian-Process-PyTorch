@@ -10,17 +10,25 @@ from .netresult import NetResult
 
 logger = getLogger(__name__)
 
+
 class RandomFeatureGaussianProcess(nn.Module):
     def __init__(
             self,
             out_features: int,
-            backbone: nn.Module = ResNetBackbone(input_features=2, num_hidden_layers=5, num_hidden=128,
-                                                 dropout_rate=0.1),
+            backbone: nn.Module = None,
             num_inducing: int = 1024,
             momentum: float = 0.9,
             ridge_penalty: float = 1e-6
     ):
         super().__init__()
+        if backbone is None:
+            backbone = ResNetBackbone(
+                # input_features=2,
+                input_features=28 * 28,
+                num_hidden_layers=5,
+                num_hidden=128,
+                dropout_rate=0.1)
+
         self.out_features = out_features
         self.num_inducing = num_inducing
         self.momentum = momentum

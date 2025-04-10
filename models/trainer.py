@@ -9,6 +9,7 @@ from .gaussian_process_layer import RandomFeatureGaussianProcess
 
 logger = getLogger(__name__)
 
+
 class Trainer:
     def __init__(self,
                  model_config,
@@ -17,6 +18,7 @@ class Trainer:
                  device=torch.device('cuda')):
         self.model = model(**model_config)
         self.model.to(device)
+        self.device = device
         logger.info(self.model)
         criterions = {
             'classification': torch.nn.CrossEntropyLoss(reduction='mean'),
@@ -35,14 +37,13 @@ class Trainer:
 
         def compute_loss(batch):
             X, y = batch
+            X, y = X.to(self.device), y.to(self.device)  # Move inputs to the same device as the model
             logits, variance = self.model(X, with_variance=False, update_precision=self.update_precision_incrementally)
 
             neg_log_likelihood = self.criterion(logits, y)
 
             # RFF approximation reduced the GP problem to a Bayesian linear model
             # Since beta has gaussian prior, the objective can be written as a standard
-            # MAP estimation as a regularised MLE objective
-
             betas = self.model.beta.weight
             l2_loss = 0.5 * l2(betas)
 
